@@ -14,5 +14,6 @@ class CreateStudents < ActiveRecord::Migration
       t.date :birthday
       t.timestamps null: false
   	end
+#  	add_foreign_key :students, :teachers #not in SQLite3
   end
 end

@@ -2,7 +2,12 @@ require 'rake'
 require 'rspec/core/rake_task'
 require_relative 'db/config'
 require_relative 'lib/students_importer'
+require_relative 'lib/teachers_importer'
+require_relative 'lib/redistribute_students'
 
+task :console do
+  exec "irb -r./main.rb"
+end
 
 desc "create the database"
 task "db:create" do
@@ -25,7 +30,33 @@ end
 
 desc "populate the test database with sample data"
 task "db:populate" do
-  StudentsImporter.import
+  StudentsImporter.import  
+end
+
+desc "populate the test database with sample teachers data"
+task "db:populateteachers" do
+  TeachersImporter.import
+end
+
+desc 'Redistribute students across teachers evenly'
+task "db:redistribute" do
+		i = 0
+		num = 9
+		until i == (Student.last.id ) do
+			student = Student.find_by(id: i+1 )
+			student.update(teachers_id: i%num+1 )
+			i +=1 
+			end
+end
+
+desc 'Retrieves students for a teacher'
+task 'db:students' do
+		f_name = ENV["first"]
+		l_name = ENV["last"]
+		teacher = Teacher.where(first_name: f_name, last_name: l_name).first
+		Student.where(teachers_id: teacher.id).find_each do |student|
+		puts student.first_name + " " + student.last_name
+	end
 end
 
 desc 'Retrieves the current schema version number'
