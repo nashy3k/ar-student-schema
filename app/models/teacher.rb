@@ -3,6 +3,8 @@ require 'byebug'
 
 class Teacher < ActiveRecord::Base
 # implement your Teacher model here
+has_many :student_teachers, :foreign_key => :teacher_id
+has_many :students, :through => :student_teachers 
 
 validates :email, uniqueness: true, :format => { :with =>  /\w*[@]{1,}\w{1,}[.]\w{2,}/, :message => "@ required" }
 validates :age, :numericality => { :greater_than => 5}

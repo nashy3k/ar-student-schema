@@ -4,6 +4,7 @@ require_relative 'db/config'
 require_relative 'lib/students_importer'
 require_relative 'lib/teachers_importer'
 require_relative 'lib/redistribute_students'
+require_relative 'app/models/student_teacher'
 
 task :console do
   exec "irb -r./main.rb"
@@ -44,18 +45,58 @@ task "db:redistribute" do
 		num = 9
 		until i == (Student.last.id ) do
 			student = Student.find_by(id: i+1 )
-			student.update(teachers_id: i%num+1 )
+			student.update(teacher_id: i%num+1 )
 			i +=1 
 			end
 end
+
+desc 'Redistribute students across students_teachers evenly'
+task "db:redistribute2" do
+		i = 0
+		num = 9
+		until i == (Student.last.id ) do 
+			student_teachers = StudentTeacher.find_or_create_by(teacher_id: i%num+1, student_id: i+1)
+			i +=1
+		end
+end
+
+desc 'Redistribute teachers across students_teachers evenly'
+task "db:redistribute2teachers" do 
+		i = 0
+		num = 9
+		until i == (Student.last.id ) do 
+			student_teachers = StudentTeacher.find_or_create_by(teacher_id: i%num+1, student_id: i+1)
+			i +=1
+		end
+end 
 
 desc 'Retrieves students for a teacher'
 task 'db:students' do
 		f_name = ENV["first"]
 		l_name = ENV["last"]
 		teacher = Teacher.where(first_name: f_name, last_name: l_name).first
-		Student.where(teachers_id: teacher.id).find_each do |student|
+		Student.where(teacher_id: teacher.id).find_each! do |student|
 		puts student.first_name + " " + student.last_name
+	end
+end
+
+desc 'Retrieves students for a teacher in many to many'
+task 'db:teachergetstudents' do
+		f_name = ENV["first"]
+		l_name = ENV["last"]
+		teacher = Teacher.where(first_name: f_name, last_name: l_name).first
+		Student.joins(:student_teachers).where(:student_teachers => {:teacher_id => teacher.id}).find_each do |student|
+			puts student.first_name + " " + student.last_name
+	end
+end
+
+desc 'Retrieves teacher for a student in many to many'
+task 'db:studentgetteachers' do
+		f_name = ENV["first"]
+		l_name = ENV["last"]
+		student = Student.where(first_name: f_name, last_name: l_name).first
+		Teacher.joins(:student_teachers).where(student_teachers: {student_id: student.id} ).find_each do |teacher|
+			puts teacher.first_name + " " + teacher.last_name
 	end
 end
 

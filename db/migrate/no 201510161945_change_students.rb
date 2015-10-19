@@ -5,7 +5,7 @@ require_relative '../config'
 class ChangeStudents < ActiveRecord::Migration
   def change
     change_table :students do |t|
-      t.belongs_to(:teachers, foreign_key: true)
+      t.belongs_to(:teacher, foreign_key: true)
     end
   end
 end
